@@ -38,13 +38,16 @@ def print_requests(): #Show petitions from the stores
         print(f"{store}:")
         for product, request in products.items():
             print(f"- {product}: {request}")
-         
-def inventory_control(): 
+
+def print_inventory():
+    print(f"Warehouse Inventory: {date.today()}")
     for product, stock in inventory.items():
         if stock == 0:
-            print(f"- {product}: NO STOCK")
+            print(f"- {product.upper()}: NO STOCK")
         else:
-            print(f"- {product}: {stock}")
+            print(f"- {product.upper()}: {stock}")
+            
+def inventory_control(): 
     while True:
         opt = int(input('Come back [0] | Refill stock [1] | Organize by quantity [2] | Organize by name [3]: '))
         if opt == 0:
@@ -52,7 +55,7 @@ def inventory_control():
         elif opt == 1:
             for product, stock in inventory.items():
                 if stock == 0:
-                    print(f"- {product}: NO STOCK")
+                    print(f"- {product.upper()}: NO STOCK")
             selected_product = input('Which one do you want to refill?: ')
             if selected_product in inventory:
                 inventory[selected_product] += int(input('How many units do you want to add?: '))
@@ -67,7 +70,7 @@ def inventory_control():
         elif opt == 3:
             sorted_inventory = sorted(inventory.items(), key=lambda x: x[0], reverse=True)
             for product, stock in sorted_inventory:
-                print(f"- {product}: {stock}")
+                print(f"- {product.upper()}: {stock}")
             
 
 def save_inventory():
@@ -177,20 +180,20 @@ def main():
         
         elif opt == '3':
             opt = '1'
+            print_inventory()
             while True:
-                print("Warehouse Inventory:")
-                for product, stock in sorted(inventory.items()):
-                    print(f"- {product}: {stock}")
                 selected_product = input('Main menu [0] | Select product to distribute [write it]: ')
                 if selected_product == '0':
                     break
-                if selected_product in inventory:
-                    if inventory[selected_product] == 0:
-                        print('No stock available for this product.')
-                    else:
-                        manual_distribution_menu(selected_product)
-                else:
+                if selected_product not in inventory:
                     print('Product not found.')
+                    continue
+                if inventory[selected_product] == 0:
+                    print('No stock available for this product.')
+                    continue
+                
+                manual_distribution_menu(selected_product)
+                print_inventory()
         
         elif opt == '4':
             automated_distribution()

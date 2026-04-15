@@ -9,11 +9,11 @@ product sugar stock 600
 product salt stock 225
 product oil stock 500
 product pasta stock 700
-product tomato stock 520
+product tomato stock 190
 product onion stock 600
 product cheese stock 300
 product yogurt stock 30
 product butter stock 260
-product eggs stock 300
+product eggs stock 40
 product water stock 0
-product juice stock 500
+product juice stock 130
