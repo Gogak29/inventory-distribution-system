@@ -1,0 +1,69 @@
+Store: North Market
+product: apple , quantity: 120
+product: banana , quantity: 85
+product: orange , quantity: 60
+product: milk , quantity: 40
+product: bread , quantity: 75
+
+Store: Green Valley Shop
+product: apple , quantity: 95
+product: banana , quantity: 110
+product: rice , quantity: 200
+product: beans , quantity: 150
+product: sugar , quantity: 90
+
+Store: Downtown Fresh
+product: apple , quantity: 140
+product: orange , quantity: 100
+product: milk , quantity: 65
+product: cheese , quantity: 45
+product: yogurt , quantity: 70
+
+Store: Sunset Grocery
+product: banana , quantity: 130
+product: rice , quantity: 180
+product: pasta , quantity: 95
+product: tomato , quantity: 150
+product: onion , quantity: 120
+
+Store: Ocean View Market
+product: apple , quantity: 160
+product: banana , quantity: 140
+product: orange , quantity: 125
+product: water , quantity: 300
+product: juice , quantity: 210
+
+Store: Hilltop Store
+product: rice , quantity: 220
+product: beans , quantity: 175
+product: sugar , quantity: 100
+product: salt , quantity: 80
+product: oil , quantity: 95
+
+Store: Riverside Shop
+product: apple , quantity: 105
+product: milk , quantity: 85
+product: bread , quantity: 95
+product: butter , quantity: 60
+product: eggs , quantity: 130
+
+Store: Central Market
+product: banana , quantity: 170
+product: orange , quantity: 145
+product: rice , quantity: 260
+product: pasta , quantity: 115
+product: tomato , quantity: 180
+
+Store: Urban Fresh
+product: apple , quantity: 115
+product: yogurt , quantity: 90
+product: cheese , quantity: 75
+product: milk , quantity: 100
+product: juice , quantity: 160
+
+Store: Family Grocery
+product: rice , quantity: 240
+product: beans , quantity: 190
+product: sugar , quantity: 130
+product: oil , quantity: 120
+product: salt , quantity: 95
