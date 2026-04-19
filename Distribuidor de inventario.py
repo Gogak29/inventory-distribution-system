@@ -161,7 +161,7 @@ def manual_distribution_menu(selected_product):
 
 
 def automated_distribution():
-    print('no')
+    print('')
 
 def main():
     # Principal Hub
