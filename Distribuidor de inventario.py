@@ -5,7 +5,7 @@ stores = {}
 inventory = {}
 items_distributed = {}
 
-with open('store_inventory_requests.txt', 'r') as f:
+with open('stores_inventory_stock.txt', 'r') as f:
     store_requests = f.readlines()
 with open('warehouse_inventory.txt', 'r') as f:
     warehouse_inventory = f.readlines()
@@ -32,7 +32,7 @@ for line in warehouse_inventory:
     stock = int(data[3])
     inventory[product] = stock
 
-def print_requests(): #Show petitions from the stores
+def print_stores_stock(): #Show petitions from the stores
     print(f"Today requests: {date.today()}:")
     for store, products in stores.items():
         print(f"{store}:")
@@ -79,7 +79,7 @@ def save_inventory():
             f.write(f"product {product} stock {stock}\n")
             
 def save_distribution():
-    with open('store_inventory_requests.txt', 'w') as f:
+    with open('stores_inventory_stock.txt', 'w') as f:
         for store, products in stores.items():
             f.write(f"\nStore: {store}\n")
             for product, quantity in products.items():
@@ -109,7 +109,7 @@ def manual_distribution(selected_product):
                 else:
                     print(f"Cannot distribute {distribution} units. Check stock and request.")
 
-def print_requests_for_product(selected_product, print_stock=True):
+def print_stores_stock_for_product(selected_product, print_stock=True):
     ask = False
     n = 0
     if selected_product not in inventory:
@@ -136,25 +136,25 @@ def print_requests_for_product(selected_product, print_stock=True):
 
 def manual_distribution_menu(selected_product):
     s_product = selected_product
-    ask = print_requests_for_product(s_product, print_stock=True)
+    ask = print_stores_stock_for_product(s_product, print_stock=True)
     while True:
-        ask = print_requests_for_product(s_product, print_stock=False)
+        ask = print_stores_stock_for_product(s_product, print_stock=False)
         if inventory[s_product] == 0:
             print(f"No stock available for {s_product}.")
             s_product = input('List of products in stock [0] | Distribute another product [write it]: ')
             if s_product == '0':
                     break
-            print_requests_for_product(s_product, print_stock=True)
+            print_stores_stock_for_product(s_product, print_stock=True)
         else:
             if ask == False:
                 print(f"All requests for {s_product} have been satisfied.")
                 s_product = input('List of products in stock [0] | Distribute another product [write it]: ')
                 if s_product == '0':
                     break
-                print_requests_for_product(s_product, print_stock=True)
+                print_stores_stock_for_product(s_product, print_stock=True)
             else:
                 manual_distribution(s_product)
-                print_requests_for_product(s_product, print_stock=True)
+                print_stores_stock_for_product(s_product, print_stock=True)
                 opt = input('List of products in stock [0] | Distribute more [1]: ')
                 if opt == '0':
                     break
@@ -173,7 +173,7 @@ def main():
             break
         
         elif opt == '1':
-            print_requests()
+            print_stores_stock()
         
         elif opt == '2':
             inventory_control()
