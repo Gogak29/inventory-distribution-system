@@ -1,69 +1,69 @@
 Store: North Market
-product: apple , quantity: 120
-product: banana , quantity: 85
-product: orange , quantity: 60
-product: milk , quantity: 40
-product: bread , quantity: 75
+product: apple , quantity: 120 , sells_per_day: 12.5
+product: banana , quantity: 85 , sells_per_day: 18.3
+product: orange , quantity: 60 , sells_per_day: 9.7
+product: milk , quantity: 40 , sells_per_day: 22.1
+product: bread , quantity: 75 , sells_per_day: 25.4
 
 Store: Green Valley Shop
-product: apple , quantity: 95
-product: banana , quantity: 110
-product: rice , quantity: 200
-product: beans , quantity: 150
-product: sugar , quantity: 90
+product: apple , quantity: 95 , sells_per_day: 11.8
+product: banana , quantity: 110 , sells_per_day: 17.6
+product: rice , quantity: 200 , sells_per_day: 8.3
+product: beans , quantity: 150 , sells_per_day: 6.1
+product: sugar , quantity: 90 , sells_per_day: 4.7
 
 Store: Downtown Fresh
-product: apple , quantity: 140
-product: orange , quantity: 100
-product: milk , quantity: 65
-product: cheese , quantity: 45
-product: yogurt , quantity: 70
+product: apple , quantity: 140 , sells_per_day: 13.2
+product: orange , quantity: 100 , sells_per_day: 10.4
+product: milk , quantity: 65 , sells_per_day: 23.8
+product: cheese , quantity: 45 , sells_per_day: 14.6
+product: yogurt , quantity: 70 , sells_per_day: 16.9
 
 Store: Sunset Grocery
-product: banana , quantity: 130
-product: rice , quantity: 180
-product: pasta , quantity: 95
-product: tomato , quantity: 150
-product: onion , quantity: 120
+product: banana , quantity: 130 , sells_per_day: 19.1
+product: rice , quantity: 180 , sells_per_day: 7.8
+product: pasta , quantity: 95 , sells_per_day: 5.3
+product: tomato , quantity: 150 , sells_per_day: 21.4
+product: onion , quantity: 120 , sells_per_day: 11.2
 
 Store: Ocean View Market
-product: apple , quantity: 160
-product: banana , quantity: 140
-product: orange , quantity: 125
-product: water , quantity: 300
-product: juice , quantity: 210
+product: apple , quantity: 160 , sells_per_day: 14.7
+product: banana , quantity: 140 , sells_per_day: 20.5
+product: orange , quantity: 125 , sells_per_day: 10.1
+product: water , quantity: 300 , sells_per_day: 35.6
+product: juice , quantity: 210 , sells_per_day: 28.3
 
 Store: Hilltop Store
-product: rice , quantity: 220
-product: beans , quantity: 175
-product: sugar , quantity: 100
-product: salt , quantity: 80
-product: oil , quantity: 95
+product: rice , quantity: 220 , sells_per_day: 9.2
+product: beans , quantity: 175 , sells_per_day: 6.8
+product: sugar , quantity: 100 , sells_per_day: 5.1
+product: salt , quantity: 80 , sells_per_day: 3.4
+product: oil , quantity: 95 , sells_per_day: 4.2
 
 Store: Riverside Shop
-product: apple , quantity: 105
-product: milk , quantity: 85
-product: bread , quantity: 95
-product: butter , quantity: 60
-product: eggs , quantity: 130
+product: apple , quantity: 105 , sells_per_day: 12.9
+product: milk , quantity: 85 , sells_per_day: 24.3
+product: bread , quantity: 95 , sells_per_day: 26.7
+product: butter , quantity: 60 , sells_per_day: 13.5
+product: eggs , quantity: 130 , sells_per_day: 30.2
 
 Store: Central Market
-product: banana , quantity: 170
-product: orange , quantity: 145
-product: rice , quantity: 260
-product: pasta , quantity: 115
-product: tomato , quantity: 180
+product: banana , quantity: 170 , sells_per_day: 21.8
+product: orange , quantity: 145 , sells_per_day: 11.6
+product: rice , quantity: 260 , sells_per_day: 8.9
+product: pasta , quantity: 115 , sells_per_day: 5.7
+product: tomato , quantity: 180 , sells_per_day: 22.6
 
 Store: Urban Fresh
-product: apple , quantity: 115
-product: yogurt , quantity: 90
-product: cheese , quantity: 75
-product: milk , quantity: 100
-product: juice , quantity: 160
+product: apple , quantity: 115 , sells_per_day: 13.8
+product: yogurt , quantity: 90 , sells_per_day: 17.4
+product: cheese , quantity: 75 , sells_per_day: 15.2
+product: milk , quantity: 100 , sells_per_day: 23.1
+product: juice , quantity: 160 , sells_per_day: 27.5
 
 Store: Family Grocery
-product: rice , quantity: 240
-product: beans , quantity: 190
-product: sugar , quantity: 130
-product: oil , quantity: 120
-product: salt , quantity: 95
+product: rice , quantity: 240 , sells_per_day: 8.6
+product: beans , quantity: 190 , sells_per_day: 6.4
+product: sugar , quantity: 130 , sells_per_day: 4.9
+product: oil , quantity: 120 , sells_per_day: 4.5
+product: salt , quantity: 95 , sells_per_day: 3.7
