@@ -1,3 +1,4 @@
+
 Store: North Market
 product: apple , quantity: 120 , sells_per_day: 12.5
 product: banana , quantity: 85 , sells_per_day: 18.3
@@ -16,7 +17,7 @@ Store: Downtown Fresh
 product: apple , quantity: 140 , sells_per_day: 13.2
 product: orange , quantity: 100 , sells_per_day: 10.4
 product: milk , quantity: 65 , sells_per_day: 23.8
-product: cheese , quantity: 45 , sells_per_day: 14.6
+product: cheese , quantity: 15 , sells_per_day: 14.6
 product: yogurt , quantity: 70 , sells_per_day: 16.9
 
 Store: Sunset Grocery
@@ -57,7 +58,7 @@ product: tomato , quantity: 180 , sells_per_day: 22.6
 Store: Urban Fresh
 product: apple , quantity: 115 , sells_per_day: 13.8
 product: yogurt , quantity: 90 , sells_per_day: 17.4
-product: cheese , quantity: 75 , sells_per_day: 15.2
+product: cheese , quantity: 35 , sells_per_day: 15.2
 product: milk , quantity: 100 , sells_per_day: 23.1
 product: juice , quantity: 160 , sells_per_day: 27.5
 
