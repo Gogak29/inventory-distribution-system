@@ -3,7 +3,7 @@ product banana stock 650
 product orange stock 500
 product milk stock 400
 product bread stock 350
-product rice stock 100
+product rice stock 400
 product beans stock 900
 product sugar stock 600
 product salt stock 225
@@ -12,8 +12,8 @@ product pasta stock 700
 product tomato stock 190
 product onion stock 600
 product cheese stock 230
-product yogurt stock 30
+product yogurt stock 330
 product butter stock 260
-product eggs stock 40
-product water stock 50
+product eggs stock 340
+product water stock 350
 product juice stock 130

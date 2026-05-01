@@ -1,3 +1,2 @@
 
-            opt = '1'
-            selected_product = 0
+    print_stores_stock_for_product(s_prod
