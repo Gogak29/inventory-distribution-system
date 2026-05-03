@@ -76,7 +76,7 @@ product: yogurt , quantity: 70 , sells_per_day: 16.9
 product: pasta , quantity: 95 , sells_per_day: 5.3
 product: tomato , quantity: 150 , sells_per_day: 21.4
 product: onion , quantity: 120 , sells_per_day: 11.2
-product: water , quantity: 5 , sells_per_day: 35.6
+product: water , quantity: 205 , sells_per_day: 35.6
 product: juice , quantity: 210 , sells_per_day: 28.3
 product: butter , quantity: 3 , sells_per_day: 13.5
 product: eggs , quantity: 130 , sells_per_day: 30.2
@@ -181,7 +181,7 @@ product: yogurt , quantity: 90 , sells_per_day: 17.4
 product: pasta , quantity: 95 , sells_per_day: 5.3
 product: tomato , quantity: 6 , sells_per_day: 22.6
 product: onion , quantity: 120 , sells_per_day: 11.2
-product: water , quantity: 300 , sells_per_day: 35.6
+product: water , quantity: 330 , sells_per_day: 35.6
 product: juice , quantity: 160 , sells_per_day: 27.5
 product: butter , quantity: 60 , sells_per_day: 13.5
 product: eggs , quantity: 3 , sells_per_day: 30.2

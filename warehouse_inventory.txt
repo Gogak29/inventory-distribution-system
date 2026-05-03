@@ -15,5 +15,5 @@ product cheese stock 230
 product yogurt stock 330
 product butter stock 260
 product eggs stock 340
-product water stock 350
-product juice stock 130
+product water stock 120
+product juice stock 630

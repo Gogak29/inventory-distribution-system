@@ -1,4 +1,4 @@
-import threading
+import time
 from datetime import date
 from rich.console import Console
 from rich.table import Table
@@ -74,7 +74,7 @@ def inventory_daysRemaining():
         try:
             inventory[product]['daysremaining'] = round(inventory[product]['stock'] / inventory_days_remaining[product])
         except ZeroDivisionError:
-            inventory[product]['daysremaining'] = '-'
+            inventory[product]['daysremaining'] = 0
                 
                     
 parse_data()
@@ -127,49 +127,89 @@ def print_stores_stock():
             console.print(f"  - [white]{product.capitalize()}[/white]: {qty_str} units | [dim]{spd} SpD[/dim] | {days_str}")
 
 
-def print_inventory():
+def print_inventory(items=None):
     console.print(f"\n[bold cyan]Warehouse Inventory: {date.today()}[/bold cyan]")
-    for product, data in inventory.items():
-        if data['stock'] == 0:
-            console.print(f"  - [bold red]{product.capitalize()}: [italic]NO STOCK[/italic][/bold red] | [dim]Days remaining: {data['daysremaining']}[/dim]")
-        
-        elif data['daysremaining'] == 0:
-            console.print(f"  - [bold red]{product.capitalize()}: {data['stock']}[/bold red] | [dim]Days remaining: {data['daysremaining']}[/dim] ")
-        elif data['daysremaining'] < 4:
-            console.print(f"  - [bold yellow]{product.capitalize()}: {data['stock']}[/bold yellow] | [yellow]Days remaining: {data['daysremaining']}[/yellow]")
+    # If no custom list is passed, use the full inventory
+    entries = items if items is not None else inventory.items()
+    for product, data in entries:
+        dr = data['daysremaining']
+        stock = data['stock']
+        name = product.capitalize()
+
+        if stock == 0:
+            console.print(f"  - [bold red]{name}: [italic]NO STOCK[/italic][/bold red] | [dim]Days remaining: {dr}[/dim]")
+        elif dr == 0:
+            console.print(f"  - [bold red]{name}: {stock}[/bold red] | [dim]Days remaining: {dr}[/dim]")
+        elif dr < 4:
+            console.print(f"  - [bold yellow]{name}: {stock}[/bold yellow] | [yellow]Days remaining: {dr}[/yellow]")
         else:
-            console.print(f"  - [bold green]{product.capitalize()}: {data['stock']}[/bold green] | [green]Days remaining: {data['daysremaining']}[/green]")
+            console.print(f"  - [bold green]{name}: {stock}[/bold green] | [green]Days remaining: {dr}[/green]")
 
 
 def inventory_control():
+    print_inventory()
+    sorted_items = inventory.items()  # Default order
+    
     while True:
-        print_inventory()
-        opt = input('\nCome back [0] | Refill stock [1] | Organize by quantity [2] | Organize by name [3]: ')
+        opt = input(
+            f'Come back [0] | Readjust stock [1] | Sort by quantity [2]\n| Sort by name [3] | Sort by days remaining [4]: '
+        )
+
         if opt == '0':
             break
+
         elif opt == '1':
-            console.print("\n[bold red]Products with low stock:[/bold red]")
-            for product, data in sorted(inventory.items(), key=lambda x: x[1]['stock'], reverse=True):
-                if data['daysremaining'] < 2:
-                    console.print(f"  - [red]{product.upper()}[/red]: {stock_level_color(data['stock'])} | [dim]Days remaining: {data['daysremaining']}[/dim]")
-            selected_product = input('Which one do you want to refill?: ')
+            urgent = [
+                (p, d) for p, d in inventory.items()
+                if d['daysremaining'] < 4
+            ]
+            # Sort ascending so the most urgent (lowest days) appears first
+            urgent.sort(key=lambda x: x[1]['daysremaining'])
+
+            if not urgent:
+                console.print("\n[green]All products have sufficient stock.[/green]")
+            else:
+                console.print("\n[bold red]Products with low stock:[/bold red]")
+                for product, data in urgent:
+                    console.print(
+                        f"  - [red]{product.upper()}[/red]: "
+                        f"{stock_level_color(data['stock'])} | "
+                        f"[dim]Days remaining: {data['daysremaining']}[/dim]"
+                    )
+
+            selected_product = input('\nWhich product do you want to readjust? (or 0 to go back): ').strip().lower()
+            if selected_product == '0':
+                continue
             if selected_product in inventory:
-                inventory[selected_product]['stock'] += int(input('How many units do you want to add?: '))
-                console.print(f"[green]Stock updated for {selected_product}[/green]")
-                inventory_daysRemaining()
+                try:
+                    units = int(input('How many units do you want to add/substract? put -# to substract: '))
+                    old_stock = inventory[selected_product]['stock']
+                    inventory[selected_product]['stock'] += units
+                    inventory_daysRemaining()
+                    console.print(f"[green]Stock updated for [bold]{selected_product}[/bold] from {old_stock} to {inventory[selected_product]['stock']}.[/green]")
+                except ValueError:
+                    console.print('[red]Invalid quantity. Please enter a number.[/red]')
             else:
                 console.print('[red]Product not found.[/red]')
-        elif opt == '2':
-            sorted_inventory = sorted(inventory.items(), key=lambda x: x[1]['stock'], reverse=True)
-            console.print("\n[bold cyan]Inventory by quantity:[/bold cyan]")
-            for product, data in sorted_inventory:
-                console.print(f"  - {product}: {stock_level_color(data['stock'])}")
-        elif opt == '3':
-            sorted_inventory = sorted(inventory.items(), key=lambda x: x[0])
-            console.print("\n[bold cyan]Inventory by name:[/bold cyan]")
-            for product, data in sorted_inventory:
-                console.print(f"  - [white]{product.upper()}[/white]: {stock_level_color(data['stock'])}")
+            time.sleep(2)
 
+        elif opt == '2':
+            sorted_items = sorted(inventory.items(), key=lambda x: x[1]['stock'], reverse=True)
+            console.print("\n[bold cyan]Sorted by quantity (highest first):[/bold cyan]")
+
+        elif opt == '3':
+            sorted_items = sorted(inventory.items(), key=lambda x: x[0])
+            console.print("\n[bold cyan]Sorted by name (A → Z):[/bold cyan]")
+
+        elif opt == '4':
+            sorted_items = sorted(inventory.items(), key=lambda x: x[1]['daysremaining'], reverse=True)
+            console.print("\n[bold cyan]Sorted by days remaining (most urgent first):[/bold cyan]")
+
+        else:
+            console.print('[red]Invalid option. Please try again.[/red]')
+            time.sleep(1)
+        
+        print_inventory(sorted_items)
 
 def save_inventory():
     with open('warehouse_inventory.txt', 'w') as f:
@@ -186,74 +226,108 @@ def save_changes():
                 f.write(f"product: {product} , quantity: {data['quantity']} , sells_per_day: {data['sells_per_day']}\n")
 
 
-def manual_distribution(selected_product):
+def manual_distribution(selected_product, option=None, selected_store=None):
     console.print('[dim]------------------------------------------------------------[/dim]')
     i = 0
+    s = 0
+    distribution = 0
+    
     for store, products in stores.items():
+        s += 1
         for product, data in products.items():
-            opt = input(f"Come back [0] | Distribute to a specific store[1] | Distribute to all stores [2]: ")
+            stores_stock = data['quantity']
+            if product == selected_product:
+                if option == '1':                  
+                    if s == selected_store:
+                        try:
+                            distribution = int(input(f"{selected_store}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
+                        except ValueError:
+                            if distribution == '':
+                                return
+                            console.print('[red]Invalid input. Please enter a number.[/red]')
+                            continue
+                
+                elif option == '2':
+                    i += 1
+                    
+                    try:
+                        distribution = int(input(f"{i}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
+                    except ValueError:
+                        if distribution == '':
+                            return
+                        console.print('[red]Invalid input. Please enter a number.[/red]')
+                        continue
+                
+                if selected_store is not None and s != selected_store:
+                    continue        
+                
+                if distribution <= inventory[selected_product]['stock']:
+                    if store not in items_distributed:
+                        items_distributed[store] = {}
+                    if product not in items_distributed[store]:
+                        items_distributed[store][product] = 0
+                        
+                    items_distributed[store][product] += distribution
+                    inventory[selected_product]['stock'] -= distribution
+                    stores[store][product]['quantity'] += distribution
+                    console.print(f"[green]Distributed {distribution} units of {product} to {store}.[/green][bold] Stock: {stores_stock} → {stores_stock + distribution}.[/bold]")
+                
+                elif distribution > inventory[selected_product]['stock']:
+                    console.print(f"[red]Not enough stock available for {product}.[/red]")
+                else:
+                    console.print(f"[red]Cannot distribute {distribution} units. Check stock and store stock.[/red]")
+            inventory_daysRemaining()
+    time.sleep(2)
+
+
+def manual_distribution_menu(selected_product):
+    sel_product = selected_product
+    print_stores_stock_for_product(sel_product, print_stock=True)
+    while True:
+        if inventory[sel_product]['stock'] == 0:
+            console.print(f"[bold red]No stock available for {sel_product}.[/bold red]")
+            sel_product = input('List of products in stock [0] | Distribute another product [write it]: ')
+            if sel_product == '0':
+                break
+            print_stores_stock_for_product(sel_product, print_stock=True)
+        else:
+            opt = input(f"Come back [0] | Distribute to a specific store [1] | Distribute to all stores [2]: ")
+            
             if opt == '0':
-                return
-            elif opt == '1':
-               store_selected = input('Which store do you want to distribute to? put the number: ')
-               if product == selected_product:
-                    i += 1
-                    stores_stock = data['quantity']
-                    
-                    try:
-                        distribution = int(input(f"{i}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
-                    except ValueError:
-                        if distribution == '':
-                            return
-                        console.print('[red]Invalid input. Please enter a number.[/red]')
-                        continue
-            elif opt == '2':
-                if product == selected_product:
-                    i += 1
-                    stores_stock = data['quantity']
-                    
-                    try:
-                        distribution = int(input(f"{i}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
-                    except ValueError:
-                        if distribution == '':
-                            return
-                        console.print('[red]Invalid input. Please enter a number.[/red]')
-                        continue
+                break
             
-                       
-            if distribution <= inventory[selected_product]['stock'] and distribution <= stores_stock:
-                if store not in items_distributed:
-                    items_distributed[store] = {}
-                if product not in items_distributed[store]:
-                    items_distributed[store][product] = 0
-                items_distributed[store][product] += distribution
-
-                inventory[selected_product]['stock'] -= distribution
-                stores[store][product]['quantity'] += distribution
-                console.print(f"[green]Distributed {distribution} units of {product} to {store}.[/green]")
+            if opt == '1':
+                try:
+                    sel_store = int(input('Which store do you want to distribute to? put the number: '))
+                    manual_distribution(sel_product, opt, sel_store)   
+                
+                except ValueError:
+                    console.print('[red]Invalid input. Please enter a number.[/red]')
+                if sel_store < 1 or sel_store > len(stores):
+                    console.print('[red]Invalid store number. Please try again.[/red]')
+                    continue
             
-            elif distribution > inventory[selected_product]['stock']:
-                console.print(f"[red]Not enough stock available for {product}.[/red]")
-            elif distribution > stores_stock:
-                console.print(f"[red]Cannot distribute more than the requested amount for {store}.[/red]")
-            else:
-                console.print(f"[red]Cannot distribute {distribution} units. Check stock and stores_stock.[/red]")
-        inventory_daysRemaining()
-
+            if opt == '2':
+                sel_store = None
+                manual_distribution(sel_product, opt, sel_store)
+                
+            print_stores_stock_for_product(sel_product, print_stock=True)
 
 def print_stores_stock_for_product(selected_product, print_stock=True):
     n = 0
-    stores = []
+    
     if selected_product not in inventory:
         console.print('[red]Product not found in inventory.[/red]')
         return
+    
     if print_stock:
+        
         stock = inventory[selected_product]['stock']
+        
         console.print(f"\n[bold white]{selected_product.capitalize()} in warehouse:[/bold white] {stock_level_color(stock)}")
         for store, products in stores.items():
             for product, data in products.items():
                 if product == selected_product:
-                    stores.append((store, data))
                     if data['quantity'] > 0:
                         n += 1
                         console.print(f"  [bold]{n}- {store}:[bold] [yellow]Has {data['quantity']} {product} in stock[/yellow] | [bold]Days remaining:[/bold] {days_remaining_color(0, data['quantity'], data['sells_per_day'])}")
@@ -262,22 +336,7 @@ def print_stores_stock_for_product(selected_product, print_stock=True):
                         console.print(f"  [bold red]{n}- {store}: {product.capitalize()} out of stock[/bold red]")
 
 
-def manual_distribution_menu(selected_product):
-    s_product = selected_product
-    print_stores_stock_for_product(s_product, print_stock=True)
-    while True:
-        if inventory[s_product]['stock'] == 0:
-            console.print(f"[bold red]No stock available for {s_product}.[/bold red]")
-            s_product = input('List of products in stock [0] | Distribute another product [write it]: ')
-            if s_product == '0':
-                break
-            print_stores_stock_for_product(s_product, print_stock=True)
-        else:
-            manual_distribution(s_product)
-            print_stores_stock_for_product(s_product, print_stock=True)
-            opt = input('List of products in stock [0] | Distribute more [1]: ')
-            if opt == '0':
-                break
+
 
 
 def automated_distribution():
