@@ -231,6 +231,10 @@ def manual_distribution(selected_product, option=None, selected_store=None):
     i = 0
     s = 0
     distribution = 0
+    n_selected_store = 0
+    
+    if selected_store.isdigit():
+        n_selected_store = int(selected_store)
     
     for store, products in stores.items():
         s += 1
@@ -238,27 +242,34 @@ def manual_distribution(selected_product, option=None, selected_store=None):
             stores_stock = data['quantity']
             if product == selected_product:
                 if option == '1':                  
-                    if s == selected_store:
+                    if s == n_selected_store or selected_store.lower() == store.lower():
                         try:
-                            distribution = int(input(f"{selected_store}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
+                            distribution = int(input(f"{s}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
                         except ValueError:
                             if distribution == '':
                                 return
+                            elif distribution > inventory[selected_product]['stock']:
+                                console.print(f"[red]Not enough stock available for {product}.[/red]")
+                                time.sleep(1)
+                                return
                             console.print('[red]Invalid input. Please enter a number.[/red]')
-                            continue
+                            time.sleep(1)
+                            return
                 
                 elif option == '2':
                     i += 1
-                    
+                    if inventory[selected_product]['stock'] == 0:
+                        return
                     try:
                         distribution = int(input(f"{i}) {store} has: {stores_stock} in stock | {product} warehouse stock: {inventory[product]['stock']} | You distribute: "))
                     except ValueError:
                         if distribution == '':
                             return
                         console.print('[red]Invalid input. Please enter a number.[/red]')
+                        time.sleep(1)
                         continue
                 
-                if selected_store is not None and s != selected_store:
+                if selected_store is not None and(s != n_selected_store and selected_store.lower() != store.lower()):
                     continue        
                 
                 if distribution <= inventory[selected_product]['stock']:
@@ -277,7 +288,7 @@ def manual_distribution(selected_product, option=None, selected_store=None):
                 else:
                     console.print(f"[red]Cannot distribute {distribution} units. Check stock and store stock.[/red]")
             inventory_daysRemaining()
-    time.sleep(2)
+    time.sleep(1.5)
 
 
 def manual_distribution_menu(selected_product):
@@ -297,15 +308,15 @@ def manual_distribution_menu(selected_product):
                 break
             
             if opt == '1':
-                try:
-                    sel_store = int(input('Which store do you want to distribute to? put the number: '))
-                    manual_distribution(sel_product, opt, sel_store)   
+                sel_store = input('Which store do you want to distribute to? put the number or the store name: ')
                 
-                except ValueError:
-                    console.print('[red]Invalid input. Please enter a number.[/red]')
-                if sel_store < 1 or sel_store > len(stores):
-                    console.print('[red]Invalid store number. Please try again.[/red]')
-                    continue
+                if sel_store.isdigit():
+                    selected_store = int(sel_store)
+                    if selected_store < 1 or selected_store > len(stores):
+                        console.print('[red]Invalid store number. Please try again.[/red]')
+                        continue
+                    
+                manual_distribution(sel_product, opt, sel_store)
             
             if opt == '2':
                 sel_store = None
@@ -339,8 +350,9 @@ def print_stores_stock_for_product(selected_product, print_stock=True):
 
 
 
-def automated_distribution():
-    console.print('[yellow]Automated distribution coming soon...[/yellow]')
+def automated_distribution_menu(selected_product):
+    print('a')
+    
 
 
 def main():
@@ -356,16 +368,14 @@ def main():
         
         # Stores stock
         elif opt == '1':
-            parse_data()
             print_stores_stock()
         
         # Warehouse inventory
         elif opt == '2':
-            parse_data()
             inventory_control()
 
-        # Manual distribution
-        elif opt == '3':
+        # Manual distribution or automated distribution
+        elif opt == '3' or opt == '4':
             print_inventory()
             while True:
                 selected_product = input('Main menu [0] | Select product to distribute [write it]: ')
@@ -377,12 +387,12 @@ def main():
                 if inventory[selected_product]['stock'] == 0:
                     console.print('[bold red]No stock available for this product.[/bold red]')
                     continue
-                manual_distribution_menu(selected_product)
+                if opt == '3':
+                    manual_distribution_menu(selected_product)
+                else:
+                    automated_distribution_menu(selected_product)
                 print_inventory()
-
-        # Automated distribution
-        elif opt == '4':
-            automated_distribution()
+            
 
         # Distributed products
         elif opt == '5':
@@ -401,6 +411,7 @@ def main():
                     save_changes()
                     items_distributed.clear()
                     console.print('[green]Distribution saved successfully.[/green]')
+                    parse_data()
                 else:
                     console.print('[red]Invalid option. Please try again.[/red]')
 
