@@ -1,3 +1,4 @@
+from itertools import product
 import time
 from datetime import date
 from rich.console import Console
@@ -329,29 +330,33 @@ def print_stores_stock_for_product(selected_products, print_stock=True):
         table.add_column("Days Remaining", justify="right")
 
     n = 0
+    
     for product in selected_products:
         if product not in inventory:
             console.print('[red]Product not found in inventory.[/red]')
-            return
+            continue
         stock = inventory[product]['stock']
         console.print(f"[bold white]{product.capitalize()} in warehouse:[/bold white] {stock_level_color(stock)}")
     console.print(f"[dim]------------------------------------------------------------[/dim]")
     
     for store, products in stores.items():
         n += 1
-        table.add_row(str(f'[bold blue]{n}[/bold blue]'),
-                        store,'-', '-', '-')
-        for product in selected_products:
-            for product_name, data in products.items():
-                if product == product_name:
-                    table.add_row(
-                        '',
-                        '',
-                        product_name.capitalize(),
-                        str(data['quantity']),
-                        days_remaining_color(data['days_remaining']),
-                    )
+        table.add_row(f'[bold blue]{n}[/bold blue]', store, '', '', '')
 
+        ### p guarda el producto que coincide con la lista de productos de la tienda y luego p se asigna a store_products
+        store_products = [p for p in selected_products if p in products]
+        store_products.sort(key=lambda p: products[p]['days_remaining'])
+
+        for product_name in store_products:
+            data = products[product_name]
+            table.add_row(
+                '',
+                '',
+                product_name.capitalize(),
+                str(data['quantity']),
+                days_remaining_color(data['days_remaining']),
+            )
+        
     console.print(table)
 
 
@@ -361,64 +366,92 @@ LOW_DAYS    = 6          # Below this = low stock (shown in yellow)
 
 
 def automated_distribution(selected_products, selected_stores=None, target_days=TARGET_DAYS):
-
-
-    store_needs = {}       # { store_name: units_needed }
+    
+    warehouse_stock = {}
+    total_need = {}         # { product: total_units_needed }
+    store_needs = {}       # { store_name: { product: units_needed } }
     store_days  = {}       # { store_name: current days_remaining }
     
     if selected_stores is None:
         selected_stores = list(stores.keys())
+        
     for selected_product in selected_products:
-        warehouse_stock = inventory[selected_product]['stock']
-
-        if warehouse_stock == 0:
+        warehouse_stock[selected_product] = inventory[selected_product]['stock']
+        store_days[selected_product] = {}
+        
+        if warehouse_stock[selected_product] == 0:
             console.print(f"[bold red]No warehouse stock available for {selected_product}.[/bold red]")
             return
 
         for store in selected_stores:
             if selected_product not in stores[store]:
                 continue
+            
+            if selected_product not in store_needs:
+                store_needs[selected_product] = {}
 
             data = stores[store][selected_product]
             spd  = data['sells_per_day']
             qty  = data['quantity']
 
             days_remaining = (qty / spd) if spd > 0 else 0.0
-            store_days[store] = round(days_remaining, 1)
+            store_days[selected_product][store] = round(days_remaining, 1)
 
             need = max(0.0, (target_days - days_remaining) * spd)
-            store_needs[store] = need
+            store_needs[selected_product][store] = need
 
     # ─── STEP 2: Check if anyone actually needs anything ──────────────────────
 
-        total_need = sum(store_needs.values())
-
-        if total_need == 0:
+        total_need[selected_product] = sum(store_needs[selected_product].values())
+        print(total_need)
+        if total_need[selected_product] == 0:
             console.print(f"\n[bold green]All stores already have >= {target_days} days of {selected_product}.[/bold green]")
             return
 
     # ─── STEP 3: Preview table before distributing ───────────────────────────
-    #
-    # Show the user what will happen before committing — good UX practice.
+    opt = '1'
+    while opt != 'y':
+        if opt == '1':
+            products_text = selected_product if len(selected_products) == 1 else ", ".join(selected_products)
+            console.print(f"\n[bold cyan]Automated distribution for: {products_text}[/bold cyan]")
 
-        console.print(f"\n[bold cyan]Automated distribution for: {selected_product.capitalize()}[/bold cyan]")
-        console.print(f"[dim]Target: {target_days} days | Warehouse stock: {warehouse_stock} units | Total need: {round(total_need)} units[/dim]\n")
+            _preview_distribution_table(
+                selected_products, store_needs, store_days,
+                warehouse_stock, target_days
+            )
 
-        _preview_distribution_table(
-            selected_product, store_needs, store_days,
-            warehouse_stock, target_days
-        )
+            # ─── STEP 4: Ask for confirmation ─────────────────────────────────────────
 
-        # ─── STEP 4: Ask for confirmation ─────────────────────────────────────────
+            opt = input("\nProceed with this distribution? [y/n] | See products distribution in one table [2]: ").strip().lower()
+            if opt == 'n':
+                console.print("[yellow]Distribution cancelled.[/yellow]")
+                return
+            elif opt != 'n' and opt != 'y' and opt != '2':
+                console.print("[red]Invalid option. Please enter 'y', 'n', or '2'.[/red]")
+                opt == '1'
+                continue
+        if opt == '2':
+            products_text = selected_product if len(selected_products) == 1 else ", ".join(selected_products)
+            console.print(f"\n[bold cyan]Automated distribution for: {products_text}[/bold cyan]")
 
-        confirm = input("\nProceed with this distribution? [y/n]: ").strip().lower()
-        if confirm != 'y':
-            console.print("[yellow]Distribution cancelled.[/yellow]")
-            return
+            _preview_distribution_table(
+                selected_products, store_needs, store_days,
+                warehouse_stock, target_days
+            )
+            opt = input("\nProceed with this distribution? [y/n] | See products distribution separetly [1]: ").strip().lower()
+            if opt == 'n':
+                console.print("[yellow]Distribution cancelled.[/yellow]")
+                return
+            elif opt != 'n' and opt != 'y' and opt != '2':
+                console.print("[red]Invalid option. Please enter 'y', 'n', or '2'.[/red]")
+                opt == '2'
+                continue
 
         # ─── STEP 5: Allocate units proportionally ────────────────────────────────
+    for selected_product in selected_products:
+        warehouse_stock = inventory[selected_product]['stock']
         
-        allocations = _proportional_allocate(store_needs, warehouse_stock)
+        allocations = _proportional_allocate(store_needs[selected_product], warehouse_stock)
 
         total_distributed = 0
 
@@ -447,8 +480,8 @@ def automated_distribution(selected_products, selected_stores=None, target_days=
             total_distributed += units
             console.print(
                 f"  [green]→ {store}:[/green] +{units} units "
-                f"[dim](was {round(store_days[store], 1)} days → "
-                f"now ~{round(store_days[store] + units / stores[store][selected_product]['sells_per_day'], 1)} days)[/dim]"
+                f"[dim](was {round(store_days[selected_product][store], 1)} days → "
+                f"now ~{round(store_days[selected_product][store] + units / stores[store][selected_product]['sells_per_day'], 1)} days)[/dim]"
             )
 
         # ─── STEP 7: Refresh computed fields ──────────────────────────────────────
@@ -458,13 +491,14 @@ def automated_distribution(selected_products, selected_stores=None, target_days=
 
         remaining = inventory[selected_product]['stock']
         console.print(
-            f"\n[bold green]Done. [/bold green] Distributed {total_distributed} units. "
+            f'\n '
+            f"[bold green]Done. for {selected_product}.[/bold green] Distributed {total_distributed} units. "
             f"Warehouse remaining: {remaining} units."
         )
 
 
 def _proportional_allocate(store_needs: dict, available: float) -> dict:
-
+    
     total_need = sum(store_needs.values())
 
     if total_need == 0:
@@ -485,12 +519,13 @@ def _proportional_allocate(store_needs: dict, available: float) -> dict:
         allocations[store] = int(ideal)          # floor — whole units only
         remainder = ideal - int(ideal)           # fractional part lost to rounding
         rank[store] = remainder
-        leftover += remainder                     # accumulate all lost fractions
+        leftover += remainder
+        print(f'leftover: {leftover}')# accumulate all lost fractions
 
     # sort by biggest remainder — most shortchanged stores first
     rank = dict(sorted(rank.items(), key=lambda x: x[1], reverse=True))
 
-    leftover = int(leftover)  # only whole units can be distributed
+    leftover = round(leftover)  # only whole units can be distributed
     for store in rank:
         if leftover <= 0:
             break
@@ -501,46 +536,57 @@ def _proportional_allocate(store_needs: dict, available: float) -> dict:
 
 
 def _preview_distribution_table(
-    product, store_needs, store_days, warehouse_stock, target_days
+    selected_products, store_needs, store_days, warehouse_stock, target_days
 ):
-    total_need = sum(store_needs.values())
-    allocations = _proportional_allocate(store_needs, warehouse_stock)
+    total_need = {}
+    allocations = {}
+    store_products = []
+    
+    for product in selected_products:
+        total_need[product] = sum(store_needs[product].values())
+        allocations[product] = _proportional_allocate(store_needs[product], warehouse_stock[product])
+        sorted_stores = sorted(stores, key=lambda s: store_needs[product][s])
 
     table = Table(show_header=True, header_style="bold cyan", box=None)
     table.add_column("Store",          style="white",  min_width=20)
+    table.add_column("Product",        style="white",  min_width=20)
     table.add_column("Current days",   justify="right")
     table.add_column("Need (units)",   justify="right")
     table.add_column("Share %",        justify="right")
     table.add_column("Will receive",   justify="right")
     table.add_column("Days after",     justify="right")
-
-    sorted_stores = sorted(store_needs.keys(), key=lambda s: store_days[s])
-
+    
     for store in sorted_stores:
-        need  = store_needs[store]
-        days  = store_days[store]
-        units = int(allocations.get(store, 0))
-        spd   = stores[store][product]['sells_per_day']
+        table.add_row(store, '', '', '', '', '', '')
+        store_products = [p for p in selected_products if p in stores[store]]
+        store_products.sort(key=lambda p: store_days[p][store])
+        
+        for product in store_products:
+            need  = store_needs[product][store]
+            days  = store_days[product][store]
+            units = int(allocations[product].get(store, 0))
+            spd   = stores[store][product]['sells_per_day']
 
-        share_pct = f"{round(need / total_need * 100)}%" if total_need > 0 else "0%"
-        days_after = round(days + units / spd, 1) if spd > 0 else days
+            share_pct = f"{round(need / total_need[product] * 100)}%" if total_need[product] > 0 else "0%"
+            days_after = round(days + units / spd, 1) if spd > 0 else days
 
-        # Color-code current days
-        if days < URGENT_DAYS:
-            days_str = f"[bold red]{days}[/bold red]"
-        elif days < LOW_DAYS:
-            days_str = f"[yellow]{days}[/yellow]"
-        else:
-            days_str = f"[green]{days}[/green]"
+            # Color-code current days
+            if days < URGENT_DAYS:
+                days_str = f"[bold red]{days}[/bold red]"
+            elif days < LOW_DAYS:
+                days_str = f"[yellow]{days}[/yellow]"
+            else:
+                days_str = f"[green]{days}[/green]"
 
-        # Color-code units received
-        units_str = f"[green]+{units}[/green]" if units > 0 else "[dim]0[/dim]"
+            # Color-code units received
+            units_str = f"[green]+{units}[/green]" if units > 0 else "[dim]0[/dim]"
 
-        table.add_row(store, days_str, str(round(need)), share_pct, units_str, str(days_after))
+            table.add_row('', product, days_str, str(round(need)), share_pct, units_str, str(days_after))
 
     console.print(table)
-    console.print(f"\n[dim]Warehouse stock: {warehouse_stock} | Total needed: {round(total_need)} | "
-                  f"{'[green]Enough for all[/green]' if warehouse_stock >= total_need else '[yellow]Partial distribution[/yellow]'}[/dim]")
+    for product in selected_products:
+        console.print(f"\nProduct [white]{product}[/white]: [dim]Warehouse stock: {warehouse_stock[product]} | Total needed: {round(total_need[product])} | "
+                  f"{'[green]Enough for all[/green]' if warehouse_stock[product] >= total_need[product] else '[yellow]Partial distribution[/yellow]'}[/dim]")
 
 
 def automated_distribution_menu(selected_products):
@@ -659,12 +705,15 @@ def main():
                 for product in selected_products:
                     if product not in inventory:
                         console.print(f'[red]Product "{product}" not found.[/red]')
+                        selected_products.remove(product)
                         time.sleep(1)
                         continue
                     if inventory[product]['stock'] == 0:
                         console.print(f'[bold red]No stock available for product "{product}".[/bold red]')
                         time.sleep(1)
+                        selected_products.remove(product)
                         continue
+                selected_products = list(set(selected_products))
                 automated_distribution_menu(selected_products)
                 print_inventory()
                 
